@@ -1,30 +1,26 @@
-// === commands/mode.js ===
 const fs = require('fs');
 const path = require('path');
 
 module.exports = {
     pattern: "mode",
-    desc: "Check or change bot mode (Public/Private)",
+    desc: "Vérifier ou modifier le mode du bot (Public/Privé)",
     category: "owner",
     filename: __filename,
     use: ".mode / .mode public / .mode private",
 
     execute: async (conn, message, m, { from, isCreator, reply, args }) => {
         try {
-            if (!isCreator) return reply("❌ Owner only!");
+            if (!isCreator) return reply("❌ Réservé au propriétaire !");
 
-            // Get current mode from bot
             let currentMode = conn.public ? "public" : "private";
-            
-            // If no args, show current mode
+
             if (!args[0]) {
-                return reply(`⚙️ *Bot Mode*\n\n📌 Current mode: *${currentMode.toUpperCase()}*\n\n📝 Usage:\n.mode public - Public mode (everyone can use)\n.mode private - Private mode (only owner can use)`);
+                return reply(`⚙️ *Mode du bot*\n\n📌 Mode actuel : *${currentMode.toUpperCase()}*\n\n📝 Utilisation :\n.mode public - Mode public (tout le monde peut utiliser)\n.mode private - Mode privé (seul le propriétaire peut utiliser)`);
             }
 
             const mode = args[0].toLowerCase();
             const botModeFile = path.join(__dirname, '../database', 'botmode.txt');
 
-            // Ensure directory exists
             const dir = path.dirname(botModeFile);
             if (!fs.existsSync(dir)) {
                 fs.mkdirSync(dir, { recursive: true });
@@ -33,20 +29,20 @@ module.exports = {
             if (mode === 'public') {
                 conn.public = true;
                 fs.writeFileSync(botModeFile, 'public');
-                return reply("✅ *Public mode ON*\n\nEveryone can use the bot now.");
+                return reply("✅ *Mode public activé*\n\nTout le monde peut désormais utiliser le bot.");
             } 
-            
+
             if (mode === 'private' || mode === 'self') {
                 conn.public = false;
                 fs.writeFileSync(botModeFile, 'private');
-                return reply("✅ *Private mode ON*\n\nOnly bot owner can use the bot now.");
+                return reply("✅ *Mode privé activé*\n\nSeul le propriétaire peut désormais utiliser le bot.");
             }
-            
-            return reply("❌ Invalid mode!\n\nUse: .mode public or .mode private");
+
+            return reply("❌ Mode invalide !\n\nUtilisez : .mode public ou .mode private");
 
         } catch (err) {
-            console.error("Mode error:", err);
-            reply("❌ Failed to change bot mode.");
+            console.error("Erreur de mode :", err);
+            reply("❌ Échec du changement de mode du bot.");
         }
     }
 };
