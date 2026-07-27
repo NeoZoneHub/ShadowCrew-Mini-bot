@@ -2,14 +2,13 @@ const axios = require('axios');
 
 module.exports = {
     pattern: "inbox",
-    desc: "Check your temporary email inbox",
+    desc: "Vérifier votre boîte de réception email temporaire",
     category: "utility",
     react: "📬",
     filename: __filename,
-    use: ".inbox [session_id]",
+    use: ".inbox [id_session]",
 
     execute: async (conn, message, m, { from, q, reply }) => {
-        // Helper function to send messages with contextInfo
         const sendMessageWithContext = async (text, quoted = message) => {
             return await conn.sendMessage(from, {
                 text: text,
@@ -18,7 +17,7 @@ module.exports = {
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: "120363418906972955@newsletter",
-                        newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+                        newsletterName: "ShadowCrew",
                         serverMessageId: 200
                     }
                 }
@@ -27,9 +26,8 @@ module.exports = {
 
         try {
             const sessionId = q;
-            if (!sessionId) return await sendMessageWithContext('🔑 Please provide your session ID\nExample: .inbox YOUR_SESSION_ID');
+            if (!sessionId) return await sendMessageWithContext('🔑 Veuillez fournir votre ID de session\nExemple : .inbox VOTRE_ID_SESSION');
 
-            // React 📬
             if (module.exports.react) {
                 await conn.sendMessage(from, { react: { text: module.exports.react, key: message.key } });
             }
@@ -38,30 +36,30 @@ module.exports = {
             const response = await axios.get(inboxUrl);
 
             if (!response.data.success) {
-                return await sendMessageWithContext('❌ Invalid session ID or expired email');
+                return await sendMessageWithContext('❌ ID de session invalide ou email expiré');
             }
 
             const { inbox_count, messages } = response.data;
 
             if (inbox_count === 0) {
-                return await sendMessageWithContext('📭 Your inbox is empty');
+                return await sendMessageWithContext('📭 Votre boîte de réception est vide');
             }
 
-            let messageList = `📬 *You have ${inbox_count} message(s)*\n\n`;
+            let messageList = `📬 *Vous avez ${inbox_count} message(s)*\n\n`;
             messages.forEach((msg, index) => {
                 messageList += `━━━━━━━━━━━━━━━━━━\n` +
                               `📌 *Message ${index + 1}*\n` +
-                              `👤 *From:* ${msg.from}\n` +
-                              `📝 *Subject:* ${msg.subject}\n` +
-                              `⏰ *Date:* ${new Date(msg.date).toLocaleString()}\n\n` +
-                              `📄 *Content:*\n${msg.body}\n\n`;
+                              `👤 *De :* ${msg.from}\n` +
+                              `📝 *Sujet :* ${msg.subject}\n` +
+                              `⏰ *Date :* ${new Date(msg.date).toLocaleString()}\n\n` +
+                              `📄 *Contenu :*\n${msg.body}\n\n`;
             });
 
             await sendMessageWithContext(messageList);
 
         } catch (e) {
-            console.error('CheckMail error:', e);
-            await sendMessageWithContext(`❌ Error checking inbox: ${e.response?.data?.message || e.message}`);
+            console.error('Erreur CheckMail :', e);
+            await sendMessageWithContext(`❌ Erreur lors de la vérification de la boîte de réception : ${e.response?.data?.message || e.message}`);
         }
     }
 };
