@@ -2,13 +2,12 @@ const axios = require("axios");
 
 module.exports = {
     pattern: "play",
-    desc: "Search and download Spotify/YouTube tracks as playable audio",
+    desc: "Rechercher et télécharger des pistes Spotify/YouTube en audio lisible",
     react: "🎧",
     category: "music",
     filename: __filename,
 
     execute: async (conn, mek, m, { from, args, q, reply }) => {
-        // Helper function to send messages with contextInfo
         const sendMessageWithContext = async (text, quoted = mek) => {
             return await conn.sendMessage(from, {
                 text: text,
@@ -17,7 +16,7 @@ module.exports = {
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: "120363418906972955@newsletter",
-                        newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+                        newsletterName: "ShadowCrew",
                         serverMessageId: 200
                     }
                 }
@@ -28,14 +27,13 @@ module.exports = {
             const query = q || args.join(" ");
             if (!query) {
                 return await sendMessageWithContext(
-`❎ Please provide a song name or link.
+`❎ Veuillez fournir un nom de chanson ou un lien.
 
-📌 Examples:
+📌 Exemples :
 .play bado badi
 .play https://open.spotify.com/track/2ksyzVfU0WJoBpu8otr4pz`);
             }
 
-            // React 🎧
             if (module.exports.react) {
                 await conn.sendMessage(from, { react: { text: module.exports.react, key: mek.key } });
             }
@@ -43,11 +41,9 @@ module.exports = {
             let audioData = null;
             let apiUsed = null;
 
-            // If direct Spotify link
             if (query.includes("spotify.com/track/")) {
-                await sendMessageWithContext("🎶 Downloading track from Spotify... Please wait.");
+                await sendMessageWithContext("🎶 Téléchargement de la piste depuis Spotify... Veuillez patienter.");
 
-                // Try PrinceTech API first
                 try {
                     const api = `https://api.princetechn.com/api/download/spotifydl?apikey=prince&url=${encodeURIComponent(query)}`;
                     const { data } = await axios.get(api, { timeout: 20000 });
@@ -58,7 +54,6 @@ module.exports = {
                     }
                 } catch {}
 
-                // Try David Cyril API if PrinceTech fails
                 if (!audioData) {
                     try {
                         const api = `https://apis.davidcyriltech.my.id/spotifydl?url=${encodeURIComponent(query)}&apikey=`;
@@ -78,11 +73,9 @@ module.exports = {
                 }
             }
 
-            // If search term or fallback for both APIs
             if (!audioData) {
-                await sendMessageWithContext(`🔎 Searching for: *${query}* ...`);
+                await sendMessageWithContext(`🔎 Recherche en cours pour : *${query}* ...`);
 
-                // Try PrinceTech search first
                 try {
                     const api = `https://api.princetechn.com/api/search/spotifysearch?apikey=prince&query=${encodeURIComponent(query)}`;
                     const { data } = await axios.get(api, { timeout: 20000 });
@@ -103,11 +96,8 @@ module.exports = {
                     }
                 } catch {}
 
-                // If PrinceTech search fails, try David Cyril API with search term
                 if (!audioData) {
                     try {
-                        // For search terms, we need to convert to a Spotify link first
-                        // We'll use a search API to get a Spotify link, then use David Cyril's API
                         const searchApi = `https://api.princetechn.com/api/search/spotifysearch?apikey=prince&query=${encodeURIComponent(query)}`;
                         const { data: searchData } = await axios.get(searchApi, { timeout: 15000 });
 
@@ -115,7 +105,6 @@ module.exports = {
                             const firstResult = searchData.results[0];
                             const spotifyUrl = firstResult.url;
 
-                            // Now use David Cyril's API with the Spotify URL
                             const api = `https://apis.davidcyriltech.my.id/spotifydl?url=${encodeURIComponent(spotifyUrl)}&apikey=`;
                             const { data } = await axios.get(api, { timeout: 20000 });
 
@@ -134,16 +123,16 @@ module.exports = {
                 }
             }
 
-            if (!audioData) return await sendMessageWithContext("❌ Failed to fetch audio from all available sources.");
+            if (!audioData) return await sendMessageWithContext("❌ Échec de la récupération de l'audio depuis toutes les sources disponibles.");
 
             const { download_url, title, duration, thumbnail, channel } = audioData;
 
-            const caption = `🎵 *Track Info*\n\n` +
-                            `📖 *Title:* ${title || "Unknown"}\n` +
-                            `👤 *Artist/Channel:* ${channel || "Unknown"}\n` +
-                            `⏱️ *Duration:* ${duration || "Unknown"}\n` +
-                            `🌐 *Source:* ${apiUsed || "API"}\n\n` +
-                            `> _ᴘᴏᴡᴇʀᴇᴅ ʙʏ ϙᴀᴅᴇᴇʀ-xᴅ - ᴍɪɴɪ_`;
+            const caption = `🎵 *Informations sur la piste*\n\n` +
+                            `📖 *Titre :* ${title || "Inconnu"}\n` +
+                            `👤 *Artiste/Chaîne :* ${channel || "Inconnu"}\n` +
+                            `⏱️ *Durée :* ${duration || "Inconnue"}\n` +
+                            `🌐 *Source :* ${apiUsed || "API"}\n\n` +
+                            `> _Propulsé par ShadowCrew_`;
 
             let thumbBuffer;
             if (thumbnail) {
@@ -166,15 +155,15 @@ module.exports = {
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: "120363418906972955@newsletter",
-                        newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+                        newsletterName: "ShadowCrew",
                         serverMessageId: 200
                     }
                 }
             }, { quoted: mek });
 
         } catch (e) {
-            console.error("❌ Play Command Error:", e.response?.data || e.message);
-            await sendMessageWithContext(`⚠️ Error: ${e.message}`);
+            console.error("❌ Erreur de la commande play :", e.response?.data || e.message);
+            await sendMessageWithContext(`⚠️ Erreur : ${e.message}`);
         }
     }
 };
