@@ -1,22 +1,17 @@
-// === GroupEvents.js ===
 const { isJidGroup } = require('@whiskeysockets/baileys');
 const fs = require('fs');
 const path = require('path');
 
-// ========== TRACK SENT MESSAGES ==========
 const sentTracker = new Set();
 
-// ========== SETTINGS FILES ==========
 const SETTINGS_DIR = './database';
 const WELCOME_FILE = path.join(SETTINGS_DIR, 'welcome.json');
 const GOODBYE_FILE = path.join(SETTINGS_DIR, 'goodbye.json');
 
-// Ensure database directory exists
 if (!fs.existsSync(SETTINGS_DIR)) {
     fs.mkdirSync(SETTINGS_DIR, { recursive: true });
 }
 
-// Load settings
 function loadSettings(file) {
     try {
         if (fs.existsSync(file)) {
@@ -26,7 +21,6 @@ function loadSettings(file) {
     return {};
 }
 
-// Check if enabled
 function isEnabled(groupId, file) {
     const settings = loadSettings(file);
     return settings[groupId] === true;
@@ -40,53 +34,50 @@ module.exports = async (conn, update) => {
         for (const participant of participants) {
             const userName = participant.split("@")[0];
             
-            // Duplicate check
             const msgKey = `${id}_${action}_${participant}`;
             if (sentTracker.has(msgKey)) {
-                console.log(`⏭️ Already sent ${action} for ${userName}, skipping...`);
+                console.log(`⏭️ Message déjà envoyé pour ${action} de ${userName}, ignoré...`);
                 continue;
             }
 
-            // ========== WELCOME ==========
             if (action === "add") {
                 if (!isEnabled(id, WELCOME_FILE)) {
-                    console.log(`⏭️ Welcome disabled for ${id}`);
+                    console.log(`⏭️ Accueil désactivé pour ${id}`);
                     continue;
                 }
                 
                 sentTracker.add(msgKey);
 
-                const welcomeText = `@${userName} *_ᗯᗴᒪᑕᗝᗰᗴ  ᕼᗝǤƳᗩ  ᗩᑭᛕᗩ  ᗪᗝᔕ丅 💗👀🥹_*`;
+                const welcomeText = `@${userName} *_Bienvenue parmi nous ! Profitez pleinement du bot et amusez-vous bien 👀_*`;
 
                 await conn.sendMessage(id, {
                     text: welcomeText,
                     mentions: [participant]
                 });
                 
-                console.log(`✅ Welcome sent to ${userName}`);
+                console.log(`✅ Message d'accueil envoyé à ${userName}`);
             }
 
-            // ========== GOODBYE ==========
             else if (action === "remove") {
                 if (!isEnabled(id, GOODBYE_FILE)) {
-                    console.log(`⏭️ Goodbye disabled for ${id}`);
+                    console.log(`⏭️ Au revoir désactivé pour ${id}`);
                     continue;
                 }
                 
                 sentTracker.add(msgKey);
 
-                const goodbyeText = `@${userName} *_left us we will miss😔💗_*`;
+                const goodbyeText = `@${userName} *_nous a quittés, tu vas nous manquer_*`;
 
                 await conn.sendMessage(id, {
                     text: goodbyeText,
                     mentions: [participant]
                 });
                 
-                console.log(`✅ Goodbye sent to ${userName}`);
+                console.log(`✅ Message d'au revoir envoyé pour ${userName}`);
             }
         }
 
     } catch (err) {
-        console.error("GroupEvents error:", err);
+        console.error("Erreur GroupEvents:", err);
     }
 };
