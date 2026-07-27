@@ -1,13 +1,12 @@
-// plugins/img.js
 const axios = require("axios");
 
 module.exports = {
   pattern: "img",
-  desc: "Search and download images",
+  desc: "Rechercher et télécharger des images",
   react: "🦋",
   category: "fun",
   filename: __filename,
-  use: ".img <keywords>",
+  use: ".img <mots-clés>",
 
   execute: async (conn, message, m, { args, from }) => {
     const sendMessageWithContext = async (text, quoted = message) => {
@@ -20,7 +19,7 @@ module.exports = {
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
               newsletterJid: "120363418906972955@newsletter",
-              newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+              newsletterName: "ShadowCrew",
               serverMessageId: 200,
             },
           },
@@ -33,11 +32,10 @@ module.exports = {
       const query = args.join(" ").trim();
       if (!query) {
         return await sendMessageWithContext(
-          "❌ Please provide a search query\nExample: .img cute cats"
+          "❌ Veuillez fournir une requête de recherche\nExemple : .img chats mignons"
         );
       }
 
-      // 1) React
       if (module.exports.react) {
         try {
           await conn.sendMessage(from, {
@@ -46,9 +44,8 @@ module.exports = {
         } catch {}
       }
 
-      await sendMessageWithContext(`🔍 Searching images for "${query}"...`);
+      await sendMessageWithContext(`🔍 Recherche d'images pour "${query}"...`);
 
-      // 2) API endpoints
       const apiEndpoints = [
         `https://api-toxxic.zone.id/api/search/unsplash?q=${encodeURIComponent(query)}`,
         `https://api-toxxic.zone.id/api/search/wallpaper?q=${encodeURIComponent(query)}`
@@ -57,30 +54,28 @@ module.exports = {
       let response = null;
       let lastError = null;
 
-      // Try endpoints until some data is returned
       for (const endpoint of apiEndpoints) {
         try {
-          console.log(`[img] Trying endpoint: ${endpoint}`);
+          console.log(`[img] Tentative avec l'endpoint : ${endpoint}`);
           const r = await axios.get(endpoint, { timeout: 10000 });
           if (r && r.data) {
             response = r;
-            console.log("[img] Got response from endpoint");
+            console.log("[img] Réponse reçue de l'endpoint");
             break;
           }
         } catch (err) {
           lastError = err;
-          console.warn(`[img] Endpoint failed: ${endpoint} -> ${err.message}`);
+          console.warn(`[img] Échec de l'endpoint : ${endpoint} -> ${err.message}`);
         }
       }
 
       if (!response || !response.data) {
-        console.error("[img] All image APIs failed:", lastError && lastError.message);
+        console.error("[img] Toutes les APIs d'images ont échoué :", lastError && lastError.message);
         return await sendMessageWithContext(
-          "❌ All image services are currently unavailable. Please try again later."
+          "❌ Tous les services d'images sont actuellement indisponibles. Veuillez réessayer plus tard."
         );
       }
 
-      // 3) Extract image URLs from response
       function extractArray(obj) {
         if (!obj) return [];
         if (Array.isArray(obj)) return obj;
@@ -148,13 +143,12 @@ module.exports = {
       const validUrls = [...new Set(urls.map(u => (u || "").trim()).filter(u => /^https?:\/\//i.test(u)))];
 
       if (!validUrls.length) {
-        console.warn("[img] No valid image URLs extracted from response");
+        console.warn("[img] Aucune URL d'image valide extraite de la réponse");
         return await sendMessageWithContext(
-          "❌ No images found. Try different keywords."
+          "❌ Aucune image trouvée. Essayez d'autres mots-clés."
         );
       }
 
-      // 4) Choose up to 5 random images
       const limit = 5;
       const selected = validUrls.sort(() => 0.5 - Math.random()).slice(0, limit);
 
@@ -168,7 +162,7 @@ module.exports = {
             from,
             {
               image: buffer,
-              caption: `📷 Result for: ${query}\n> © *_ᴘᴏᴡᴇʀᴇᴅ ʙʏ ϙᴀᴅᴇᴇʀ-xᴅ - ᴍɪɴɪ_*`
+              caption: `📷 Résultat pour : ${query}\n> © *_Propulsé par ShadowCrew_*`
             },
             { quoted: message }
           );
@@ -176,21 +170,21 @@ module.exports = {
           sentCount++;
           await new Promise(res => setTimeout(res, 1000));
         } catch (imgErr) {
-          console.warn(`[img] Failed to download/send image: ${imageUrl} -> ${imgErr.message}`);
+          console.warn(`[img] Échec du téléchargement/envoi de l'image : ${imageUrl} -> ${imgErr.message}`);
           continue;
         }
       }
 
       if (sentCount === 0) {
         return await sendMessageWithContext(
-          "❌ Failed to download/send any images. Try again later."
+          "❌ Échec du téléchargement ou de l'envoi des images. Veuillez réessayer plus tard."
         );
       }
 
     } catch (err) {
-      console.error("Image search error:", err);
+      console.error("Erreur de recherche d'images :", err);
       await sendMessageWithContext(
-        `⚠️ Error: ${err.message || "Failed to fetch images"}`
+        `⚠️ Erreur : ${err.message || "Échec de la récupération des images"}`
       );
     }
   },
