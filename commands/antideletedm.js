@@ -1,35 +1,34 @@
-// === commands/antideletedm.js ===
 const { getSetting, setSetting } = require('../Settings.js');
 
 module.exports = {
     pattern: "antideletedm",
-    desc: "Toggle anti-delete for DMs",
+    desc: "Activer/désactiver l'anti-suppression pour les messages privés",
     category: "owner",
     filename: __filename,
     use: ".antideletedm on/off",
 
     execute: async (conn, message, m, { from, isCreator, reply, args }) => {
         try {
-            if (!isCreator) return reply("❌ Owner only!");
-            if (!args[0]) return reply("📌 Usage: .antideletedm on/off");
+            if (!isCreator) return reply("❌ Réservé au propriétaire !");
+            if (!args[0]) return reply("📌 Utilisation : .antideletedm on/off");
 
             if (args[0].toLowerCase() === 'on') {
                 setSetting('bot', "antideletedm", true);
                 global.antiDeleteDM = true;
-                return reply("✅ Anti-delete DM enabled!\n\n🔍 Deleted DM messages will be forwarded to bot owner.");
+                return reply("✅ Anti-suppression des messages privés activé !\n\n🔍 Les messages supprimés seront transférés au propriétaire du bot.");
             } 
             
             if (args[0].toLowerCase() === 'off') {
                 setSetting('bot', "antideletedm", false);
                 global.antiDeleteDM = false;
-                return reply("❌ Anti-delete DM disabled!");
+                return reply("❌ Anti-suppression des messages privés désactivé !");
             }
             
-            return reply("📌 Usage: .antideletedm on/off");
+            return reply("📌 Utilisation : .antideletedm on/off");
 
         } catch (error) {
-            console.error("Anti-delete DM error:", error);
-            reply("⚠️ Failed to toggle anti-delete DM.");
+            console.error("Erreur anti-suppression DM :", error);
+            reply("⚠️ Échec de la modification de l'anti-suppression des messages privés.");
         }
     }
 };
