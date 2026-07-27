@@ -1,30 +1,29 @@
 module.exports = {
     pattern: "8ball",
-    desc: "Magic 8-Ball gives answers",
+    desc: "La boule magique 8-Ball donne des réponses",
     category: "fun",
     react: "🎱",
     filename: __filename,
     execute: async (conn, mek, m, { from, q, reply }) => {
-        if (!q) return reply("Ask a yes/no question! Example: .8ball Will I be rich?");
-        
+        if (!q) return reply("Posez une question oui/non ! Exemple : .8ball Vais-je devenir riche ?");
+
         let responses = [
-            "Yes!", "No.", "Maybe...", "Definitely!", "Not sure.", 
-            "Ask again later.", "I don't think so.", "Absolutely!", 
-            "No way!", "Looks promising!"
+            "Oui !", "Non.", "Peut-être...", "Absolument !", "Pas sûr.",
+            "Re-demande plus tard.", "Je ne pense pas.", "Absolument !",
+            "Pas du tout !", "Cela semble prometteur !"
         ];
-        
+
         let answer = responses[Math.floor(Math.random() * responses.length)];
-        
-        // Send reply with contextInfo
+
         await conn.sendMessage(from, {
-            text: `🎱 *Magic 8-Ball says:* ${answer}`,
+            text: `🎱 *La boule magique 8-Ball dit :* ${answer}`,
             contextInfo: {
                 mentionedJid: [`${m.sender.split('@')[0]}@s.whatsapp.net`], 
                 forwardingScore: 999,
                 isForwarded: true,
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: '120363418906972955@newsletter',
-                    newsletterName: '𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡  ',
+                    newsletterName: 'ShadowCrew',
                     serverMessageId: 200
                 }            
             }
