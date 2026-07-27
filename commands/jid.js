@@ -1,49 +1,52 @@
-module.exports = {
-    pattern: "jid",
-    desc: "Get full JID of current chat/user/channel",
-    category: "utility",
-    react: "🆔",
-    filename: __filename,
-    use: ".jid",
+const { cmd } = require("../inconnuboy");
 
-    execute: async (conn, message, m, { from, isGroup, reply, sender }) => {
-        const sendFancyReply = async (text, quoted = message) => {
-            return await conn.sendMessage(from, {
-                text: text,
-                contextInfo: {
-                    forwardingScore: 999,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: "120363418906972955@newsletter",
-                        newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
-                        serverMessageId: 200
-                    },
-                    externalAdReply: {
-                        title: "🆔 JID Information",
-                        body: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
-                        thumbnailUrl: "https://files.catbox.moe/6dhr11.jpg", // Replace with your image URL
-                        sourceUrl: "https://github.com/QadeerXTech/QADEER-AI",      // Replace with your repo link
-                        mediaType: 1,
-                        renderLargerThumbnail: true
-                    }
-                }
-            }, { quoted: quoted });
-        };
+cmd({
+  pattern: "cid",
+  alias: ["newsletter", "id", "channelid"],
+  react: "⏳",
+  desc: "Get WhatsApp Channel info from link",
+  category: "whatsapp",
+  filename: __filename
+}, async (conn, mek, m, {
+  from,
+  args,
+  q,
+  reply
+}) => {
+  try {
+    if (!q) return reply("❎ Please provide a WhatsApp Channel link.\n\n*Example:* .cinfo https://whatsapp.com/channel/123456789");
 
-        try {
-            if (from.endsWith("@newsletter")) {
-                const channelJID = from;
-                await sendFancyReply(`📢 *Channel JID:*\n\`\`\`${channelJID}\`\`\``);
-            } else if (isGroup) {
-                const groupJID = from.includes('@g.us') ? from : `${from}@g.us`;
-                await sendFancyReply(`👥 *Group JID:*\n\`\`\`${groupJID}\`\`\``);
-            } else {
-                const userJID = sender.includes('@s.whatsapp.net') ? sender : `${sender}@s.whatsapp.net`;
-                await sendFancyReply(`👤 *User JID:*\n\`\`\`${userJID}\`\`\``);
-            }
-        } catch (e) {
-            console.error("JID Error:", e);
-            await sendFancyReply(`⚠️ Error fetching JID:\n${e.message}`);
-        }
+    const match = q.match(/whatsapp\.com\/channel\/([\w-]+)/);
+    if (!match) return reply("⚠️ *Invalid channel link format.*\n\nMake sure it looks like:\nhttps://whatsapp.com/channel/xxxxxxxxx");
+
+    const inviteId = match[1];
+
+    let metadata;
+    try {
+      metadata = await conn.newsletterMetadata("invite", inviteId);
+    } catch (e) {
+      return reply("❌ Failed to fetch channel metadata. Make sure the link is correct.");
     }
-};
+
+    if (!metadata || !metadata.id) return reply("❌ Channel not found or inaccessible.");
+
+    const infoText = `\`📡 Channel Info\`\n\n` +
+      `🛠️ *ID:* ${metadata.id}\n` +
+      `📌 *Name:* ${metadata.name}\n` +
+      `👥 *Followers:* ${metadata.subscribers?.toLocaleString() || "N/A"}\n` +
+      `📅 *Created on:* ${metadata.creation_time ? new Date(metadata.creation_time * 1000).toLocaleString("id-ID") : "Unknown"}`;
+
+    if (metadata.preview) {
+      await conn.sendMessage(from, {
+        image: { url: `https://pps.whatsapp.net${metadata.preview}` },
+        caption: infoText
+      }, { quoted: m });
+    } else {
+      await reply(infoText);
+    }
+
+  } catch (error) {
+    console.error("❌ Error in .cinfo plugin:", error);
+    reply("⚠️ An unexpected error occurred.");
+  }
+});
