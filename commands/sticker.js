@@ -5,11 +5,11 @@ const axios = require('axios');
 
 module.exports = {
   pattern: "s",
-  desc: "Convert media to sticker with optional custom author name",
+  desc: "Convertir un média en sticker avec un nom d'auteur personnalisé",
   category: "sticker",
   react: "🔄",
   filename: __filename,
-  use: "<reply to media> [author name]",
+  use: "<répondre à un média> [nom de l'auteur]",
 
   execute: async (conn, message, m, { from, q, reply }) => {
     const sendText = async (text, quoted = message) => {
@@ -20,7 +20,7 @@ module.exports = {
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: "120363418906972955@newsletter",
-            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+            newsletterName: "ShadowCrew",
             serverMessageId: 200
           }
         }
@@ -28,19 +28,16 @@ module.exports = {
     };
 
     try {
-      // Use default names if no custom name provided
       const packName = "";
-      const authorName = q ? q.trim() : "QADEER - AI";
+      const authorName = q ? q.trim() : "ShadowCrew";
 
-      // Determine target message that contains media
       const quotedMsg = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       const target = quotedMsg || message.message;
 
       if (!target) {
-        return await sendText("*Please reply to an image/video/GIF or send .s as the caption of a media.*\n\n*Usage:* .s [author name]\n*Example:* .s Henry");
+        return await sendText("*Veuillez répondre à une image/vidéo/GIF ou envoyer .s comme légende d'un média.*\n\n*Utilisation :* .s [nom de l'auteur]\n*Exemple :* .s Henry");
       }
 
-      // Detect media type
       let mediaNode = null;
       let mediaType = null;
       if (target.imageMessage) {
@@ -53,17 +50,15 @@ module.exports = {
         mediaNode = target.stickerMessage;
         mediaType = "sticker";
       } else {
-        return await sendText("*Please reply to an image, video or sticker.*\n\n*Usage:* .s  name");
+        return await sendText("*Veuillez répondre à une image, vidéo ou sticker.*\n\n*Utilisation :* .s nom");
       }
 
-      // React if configured
       if (module.exports.react) {
         try { 
           await conn.sendMessage(from, { react: { text: module.exports.react, key: message.key } }); 
         } catch (e) {}
       }
 
-      // Download media
       let buffer;
       try {
         const stream = await downloadContentFromMessage(mediaNode, mediaType);
@@ -73,15 +68,14 @@ module.exports = {
         }
         buffer = _buf;
       } catch (e) {
-        console.error("Download error:", e);
-        return await sendText("❌ Failed to download media. Try replying to a valid image/video/sticker.");
+        console.error("Erreur de téléchargement :", e);
+        return await sendText("❌ Échec du téléchargement du média. Essayez de répondre à une image/vidéo/sticker valide.");
       }
 
       if (!buffer || buffer.length === 0) {
-        return await sendText("❌ Downloaded media is empty or too large.");
+        return await sendText("❌ Le média téléchargé est vide ou trop volumineux.");
       }
 
-      // If sticker already, just re-send it with custom metadata
       if (mediaType === "sticker") {
         try {
           const sticker = new Sticker(buffer, {
@@ -94,12 +88,11 @@ module.exports = {
           const out = await sticker.toBuffer();
           return await conn.sendMessage(from, { sticker: out }, { quoted: message });
         } catch (e) {
-          console.error("Sticker re-wrap error:", e);
+          console.error("Erreur de ré-emballage du sticker :", e);
           return await conn.sendMessage(from, { sticker: buffer }, { quoted: message });
         }
       }
 
-      // Convert images/videos to webp
       let webpBuffer;
       try {
         if (mediaType === "image") {
@@ -109,15 +102,14 @@ module.exports = {
           webpBuffer = await videoToWebp(buffer);
         }
       } catch (e) {
-        console.error("Conversion error:", e);
-        return await sendText("❌ Failed to convert media to sticker. Make sure FFmpeg is installed.");
+        console.error("Erreur de conversion :", e);
+        return await sendText("❌ Échec de la conversion du média en sticker. Assurez-vous que FFmpeg est installé.");
       }
 
       if (!webpBuffer || webpBuffer.length === 0) {
-        return await sendText("❌ Conversion produced empty output.");
+        return await sendText("❌ La conversion a produit un fichier vide.");
       }
 
-      // Create sticker with metadata
       try {
         const sticker = new Sticker(webpBuffer, {
           pack: packName,
@@ -128,15 +120,15 @@ module.exports = {
         });
         const out = await sticker.toBuffer();
         await conn.sendMessage(from, { sticker: out }, { quoted: message });
-        
+
       } catch (e) {
-        console.error("Sticker formatter error:", e);
+        console.error("Erreur du formateur de sticker :", e);
         await conn.sendMessage(from, { sticker: webpBuffer }, { quoted: message });
       }
 
     } catch (err) {
-      console.error("Sticker execution error:", err);
-      await sendText("❌ Sticker conversion failed.");
+      console.error("Erreur d'exécution du sticker :", err);
+      await sendText("❌ Échec de la conversion du sticker.");
     }
   }
 };
