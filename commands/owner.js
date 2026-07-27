@@ -10,7 +10,7 @@ module.exports = {
             const vcard1 = 'BEGIN:VCARD\n' +
                           'VERSION:3.0\n' +
                           'FN:Digital crew 243\n' +
-                          'TEL;type=CELL;type=VOICE;waid=96899861161:+968 9986 1161\n' +
+                          'TEL;type=CELL;type=VOICE;waid=998771529519:+998 77 152 95 19\n' +
                           'END:VCARD';
 
             const vcard2 = 'BEGIN:VCARD\n' +
