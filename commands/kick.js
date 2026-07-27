@@ -1,72 +1,66 @@
-// === kick.js ===
 module.exports = {
   pattern: "kick",
-  desc: "Remove a member from the group (Admin/Owner Only)",
+  desc: "Retirer un membre du groupe (Réservé aux administrateurs/propriétaire)",
   category: "group",
   react: "👢",
   filename: __filename,
-  use: ".kick @user",
+  use: ".kick @utilisateur",
 
   execute: async (conn, message, m, { from, isGroup, reply, sender }) => {
     try {
-      if (!isGroup) return reply("❌ This command can only be used in groups.");
+      if (!isGroup) return reply("❌ Cette commande ne peut être utilisée que dans les groupes.");
 
       let metadata;
       try {
         metadata = await conn.groupMetadata(from);
       } catch {
-        return reply("❌ Failed to get group info.");
+        return reply("❌ Échec de la récupération des informations du groupe.");
       }
 
-      // Check if user is admin/owner
       const participant = metadata.participants.find(p => p.id === sender);
       const isAdmin = participant?.admin === "admin" || participant?.admin === "superadmin";
       const isOwner = conn.user.id.split(":")[0] === sender.split("@")[0];
 
-      if (!isAdmin && !isOwner) return reply("❌ Only admins can use this command.");
+      if (!isAdmin && !isOwner) return reply("❌ Seuls les administrateurs peuvent utiliser cette commande.");
 
       const mentioned = m.mentionedJid ? m.mentionedJid[0] : null;
-      if (!mentioned) return reply("❌ Mention a user to kick.");
+      if (!mentioned) return reply("❌ Mentionnez un utilisateur à exclure.");
 
-      // Send reaction first
       await conn.sendMessage(from, {
         react: { text: "👢", key: message.key }
       });
 
-      // Kick the mentioned user
       await conn.groupParticipantsUpdate(from, [mentioned], "remove");
 
-      // Confirmation with contextInfo
       await conn.sendMessage(from, {
-        text: `👢 Removed @${mentioned.split("@")[0]}`,
+        text: `👢 @${mentioned.split("@")[0]} a été retiré du groupe`,
         mentions: [mentioned],
         contextInfo: {
           forwardingScore: 999,
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: "120363418906972955@newsletter",
-            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡  ",
+            newsletterName: "ShadowCrew",
             serverMessageId: 200
           }
         }
       }, { quoted: message });
 
     } catch (e) {
-      console.error("Kick error:", e);
+      console.error("Erreur d'exclusion :", e);
 
-      // Error with contextInfo + reaction ❌
       await conn.sendMessage(from, {
         react: { text: "❌", key: message.key }
       });
 
       await conn.sendMessage(from, {
-        text: "⚠️ Failed to kick user.",
+        text: "⚠️ Échec de l'exclusion de l'utilisateur.",
         contextInfo: {
           forwardingScore: 999,
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: "120363418906972955@newsletter",
-            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡  ",
+            newsletterName: "ShadowCrew",
             serverMessageId: 143
           }
         }
