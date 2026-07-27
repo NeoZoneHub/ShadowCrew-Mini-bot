@@ -1,7 +1,6 @@
-// === invite.js ===
 module.exports = {
     pattern: "invite",
-    desc: "Get group invite link",
+    desc: "Obtenir le lien d'invitation du groupe",
     category: "group",
     react: "🔗",
     filename: __filename,
@@ -10,35 +9,33 @@ module.exports = {
     execute: async (conn, mek, m, { from, isGroup, reply }) => {
         try {
             if (!isGroup) {
-                return reply("❌ This command can only be used in groups.");
+                return reply("❌ Cette commande ne peut être utilisée que dans les groupes.");
             }
 
-            // React
             if (module.exports.react) {
                 await conn.sendMessage(from, {
                     react: { text: module.exports.react, key: mek.key }
                 });
             }
 
-            // Try getting invite link
             let code;
             try {
                 code = await conn.groupInviteCode(from);
             } catch (err) {
-                console.error("Invite error:", err);
-                return reply("❌ I must be *admin* in this group to generate an invite link.");
+                console.error("Erreur d'invitation :", err);
+                return reply("❌ Je dois être *administrateur* dans ce groupe pour générer un lien d'invitation.");
             }
 
             const metadata = await conn.groupMetadata(from);
             const link = `https://chat.whatsapp.com/${code}`;
 
-            const message = `🔗 *Group Invite Link*\n\n📌 ${metadata.subject}\n\n${link}`;
+            const message = `🔗 *Lien d'invitation du groupe*\n\n📌 ${metadata.subject}\n\n${link}`;
 
             await conn.sendMessage(from, {
                 text: message,
                 contextInfo: {
                     externalAdReply: {
-                        title: "Group Invite",
+                        title: "Invitation au groupe",
                         body: metadata.subject,
                         thumbnailUrl: "https://files.catbox.moe/6dhr11.jpg",
                         sourceUrl: link,
@@ -49,8 +46,8 @@ module.exports = {
             }, { quoted: mek });
 
         } catch (e) {
-            console.error("❌ Invite command error:", e);
-            reply("⚠️ Failed to get invite link. Make sure I’m an *admin*.");
+            console.error("❌ Erreur de la commande invite :", e);
+            reply("⚠️ Échec de l'obtention du lien d'invitation. Assurez-vous que je suis *administrateur*.");
         }
     }
 };
