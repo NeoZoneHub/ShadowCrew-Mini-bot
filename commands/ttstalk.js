@@ -2,14 +2,13 @@ const axios = require("axios");
 
 module.exports = {
     pattern: "ttstalk",
-    desc: "Fetch TikTok user profile details",
+    desc: "Récupérer les détails du profil utilisateur TikTok",
     react: "📱",
     category: "search",
     filename: __filename,
-    use: ".ttstalk [username]",
+    use: ".ttstalk [nom d'utilisateur]",
 
     execute: async (conn, message, m, { from, q, reply, sender }) => {
-        // Helper function to send messages with contextInfo
         const sendMessageWithContext = async (text, quoted = message) => {
             return await conn.sendMessage(from, {
                 text: text,
@@ -18,7 +17,7 @@ module.exports = {
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: "120363418906972955@newsletter",
-                        newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+                        newsletterName: "ShadowCrew",
                         serverMessageId: 200
                     }
                 }
@@ -27,10 +26,9 @@ module.exports = {
 
         try {
             if (!q) {
-                return await sendMessageWithContext("❎ Please provide a TikTok username.\n\n*Example:* .ttstalk QADEER-XD - MINI");
+                return await sendMessageWithContext("❎ Veuillez fournir un nom d'utilisateur TikTok.\n\n*Exemple :* .ttstalk QADEER-XD - MINI");
             }
 
-            // React 📱
             if (module.exports.react) {
                 await conn.sendMessage(from, { react: { text: module.exports.react, key: message.key } });
             }
@@ -39,27 +37,27 @@ module.exports = {
             const { data } = await axios.get(apiUrl);
 
             if (!data.success || !data.result) {
-                return await sendMessageWithContext("❌ User not found or API returned no data.");
+                return await sendMessageWithContext("❌ Utilisateur introuvable ou l'API n'a renvoyé aucune donnée.");
             }
 
             const user = data.result;
 
-            const profileInfo = `╭━━〔 *🎭 TikTok Profile* 〕━━┈⊷
-┃ 👤 *Username*: @${user.username}
-┃ 📛 *Nickname*: ${user.name || "Unknown"}
-┃ ✅ *Verified*: ${user.verified ? "Yes ✅" : "No ❌"}
-┃ 🔒 *Private*: ${user.private ? "Yes 🔒" : "No 🌍"}
-┃ 📝 *Bio*: ${user.bio || "No bio available."}
+            const profileInfo = `╭━━〔 *🎭 Profil TikTok* 〕━━┈⊷
+┃ 👤 *Nom d'utilisateur* : @${user.username}
+┃ 📛 *Pseudo* : ${user.name || "Inconnu"}
+┃ ✅ *Vérifié* : ${user.verified ? "Oui ✅" : "Non ❌"}
+┃ 🔒 *Privé* : ${user.private ? "Oui 🔒" : "Non 🌍"}
+┃ 📝 *Bio* : ${user.bio || "Aucune bio disponible."}
 ┃
-┃ 📊 *Statistics*:
-┃ 👥 Followers: ${user.followers?.toLocaleString() || "0"}
-┃ 👤 Following: ${user.following?.toLocaleString() || "0"}
-┃ ❤️ Likes: ${user.likes?.toLocaleString() || "0"}
+┃ 📊 *Statistiques* :
+┃ 👥 Abonnés : ${user.followers?.toLocaleString() || "0"}
+┃ 👤 Abonnements : ${user.following?.toLocaleString() || "0"}
+┃ ❤️ J'aime : ${user.likes?.toLocaleString() || "0"}
 ┃
-┃ 🆔 *ID*: ${user.id || "N/A"}
-┃ 🔗 *Profile*: https://www.tiktok.com/@${user.username}
+┃ 🆔 *ID* : ${user.id || "N/A"}
+┃ 🔗 *Profil* : https://www.tiktok.com/@${user.username}
 ╰━━━━━━━━━━━━━━━━━━┈⊷
-> © _ᴘᴏᴡᴇʀᴇᴅ ʙʏ ϙᴀᴅᴇᴇʀ-xᴅ - ᴍɪɴɪ_ `;
+> © _Propulsé par ShadowCrew_ `;
 
             if (user.avatar) {
                 await conn.sendMessage(from, {
@@ -70,7 +68,7 @@ module.exports = {
                         isForwarded: true,
                         forwardedNewsletterMessageInfo: {
                             newsletterJid: "120363418906972955@newsletter",
-                            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+                            newsletterName: "ShadowCrew",
                             serverMessageId: 200
                         }
                     }
@@ -80,8 +78,8 @@ module.exports = {
             }
 
         } catch (error) {
-            console.error("❌ Error in TikTok stalk command:", error);
-            await sendMessageWithContext("⚠️ An error occurred while fetching TikTok profile data.");
+            console.error("❌ Erreur dans la commande TikTok stalk :", error);
+            await sendMessageWithContext("⚠️ Une erreur est survenue lors de la récupération des données du profil TikTok.");
         }
     }
 };
