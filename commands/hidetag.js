@@ -1,32 +1,27 @@
-// === hidetag.js ===
 module.exports = {
   pattern: "hidetag",
-  desc: "Tag all members for any message/media - everyone can use",
+  desc: "Taguer tous les membres pour n'importe quel message/média - accessible à tous",
   category: "group",
-  use: ".hidetag [message] or reply to a message",
+  use: ".hidetag [message] ou répondre à un message",
   filename: __filename,
 
   execute: async (conn, message, m, { q, reply, from, isGroup }) => {
     try {
-      if (!isGroup) return reply("❌ This command can only be used in groups.");
+      if (!isGroup) return reply("❌ Cette commande ne peut être utilisée que dans les groupes.");
 
-      // --- fetch group metadata ---
       let metadata;
       try {
         metadata = await conn.groupMetadata(from);
       } catch {
-        return reply("❌ Failed to get group information.");
+        return reply("❌ Échec de la récupération des informations du groupe.");
       }
 
-      // --- mentions list ---
       const participants = metadata.participants.map(p => p.id);
 
-      if (!q && !m.quoted) return reply("❌ Provide a message or reply to a message.");
+      if (!q && !m.quoted) return reply("❌ Fournissez un message ou répondez à un message.");
 
-      // React 👀
       await conn.sendMessage(from, { react: { text: "👀", key: message.key } });
 
-      // --- reply case ---
       if (m.quoted) {
         return await conn.sendMessage(
           from,
@@ -35,7 +30,6 @@ module.exports = {
         );
       }
 
-      // --- text case ---
       if (q) {
         return await conn.sendMessage(
           from,
@@ -45,9 +39,9 @@ module.exports = {
       }
 
     } catch (e) {
-      console.error("Hidetag error:", e);
+      console.error("Erreur hidetag :", e);
       try { await conn.sendMessage(from, { react: { text: "❌", key: message.key } }); } catch {}
-      reply(`⚠️ Failed to send hidetag.\n\n${e.message}`);
+      reply(`⚠️ Échec de l'envoi du hidetag.\n\n${e.message}`);
     }
   }
 };
