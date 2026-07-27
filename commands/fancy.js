@@ -1,4 +1,3 @@
-// commands/fancy.js
 let fetchFn;
 try {
   fetchFn = global.fetch || require("node-fetch");
@@ -6,21 +5,20 @@ try {
   fetchFn = global.fetch;
 }
 
-const CHAT_CACHE = new Map(); // chatId -> { text, results }
+const CHAT_CACHE = new Map();
 
 module.exports = {
   pattern: "fancy",
-  desc: "Convert text into various fonts. Use `.fancy <text>` or `.fancy <n>` after generating.",
+  desc: "Convertir du texte en différentes polices. Utilisez `.fancy <texte>` ou `.fancy <n>` après la génération.",
   category: "fun",
   react: "🎨",
   filename: __filename,
-  use: "fancy <styleNumber?> <text?> or reply to a message",
+  use: "fancy <numéroStyle?> <texte?> ou répondre à un message",
 
   execute: async (conn, mek, m, { args, reply, from }) => {
     try {
-      if (!fetchFn) return reply("⚠️ Fetch is not available on this runtime.");
+      if (!fetchFn) return reply("⚠️ Fetch n'est pas disponible dans cet environnement.");
 
-      // Extract quoted text if replying
       const getQuotedText = () => {
         const q =
           m?.quoted?.message ||
@@ -36,7 +34,6 @@ module.exports = {
         );
       };
 
-      // ✅ Safe chat ID
       const chatId = from || m.chat || mek.key?.remoteJid || "global";
 
       let styleNumber = null;
@@ -45,7 +42,7 @@ module.exports = {
 
       if (args.length === 0) {
         if (quotedText) textToConvert = quotedText;
-        else return reply("❌ Provide text or reply to a message.\nExample: `.fancy Hello`");
+        else return reply("❌ Fournissez du texte ou répondez à un message.\nExemple : `.fancy Bonjour`");
       } else {
         if (!isNaN(args[0])) {
           styleNumber = parseInt(args[0], 10);
@@ -54,30 +51,28 @@ module.exports = {
           else {
             const cached = CHAT_CACHE.get(chatId);
             if (cached) textToConvert = cached.text;
-            else return reply("❌ No previous text found in this chat. Use `.fancy <text>` first.");
+            else return reply("❌ Aucun texte trouvé dans cette discussion. Utilisez `.fancy <texte>` d'abord.");
           }
         } else {
           textToConvert = args.join(" ");
         }
       }
 
-      if (!textToConvert) return reply("⚠️ Could not determine text.");
+      if (!textToConvert) return reply("⚠️ Impossible de déterminer le texte.");
 
-      // === GiftedTech API ===
       const apiUrl = `https://api.giftedtech.co.ke/api/tools/fancy?apikey=gifted&text=${encodeURIComponent(
         textToConvert
       )}`;
       const res = await fetchFn(apiUrl);
-      if (!res.ok) return reply("⚠️ Failed to fetch fonts from API.");
+      if (!res.ok) return reply("⚠️ Échec de la récupération des polices depuis l'API.");
       const data = await res.json();
 
       if (!data || !Array.isArray(data.results)) {
-        return reply("⚠️ API returned no fonts.");
+        return reply("⚠️ L'API n'a renvoyé aucune police.");
       }
 
       CHAT_CACHE.set(chatId, { text: textToConvert, results: data.results });
 
-      // Safe JID extraction
       const getSafeMentionJid = () => {
         try {
           if (!m.sender) return [];
@@ -95,20 +90,19 @@ module.exports = {
 
       if (styleNumber !== null) {
         if (styleNumber < 1 || styleNumber > data.results.length) {
-          return reply(`⚠️ Invalid style. Choose between 1 and ${data.results.length}.`);
+          return reply(`⚠️ Style invalide. Choisissez entre 1 et ${data.results.length}.`);
         }
         const chosen = data.results[styleNumber - 1];
 
-        // Send selected style with contextInfo
         await conn.sendMessage(chatId, {
-          text: `🎨 Fancy (${styleNumber} - ${chosen.name}):\n\n${chosen.result}`,
+          text: `🎨 Style fancy (${styleNumber} - ${chosen.name}) :\n\n${chosen.result}`,
           contextInfo: {
             mentionedJid,
             forwardingScore: 999,
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
               newsletterJid: '120363418906972955@newsletter',
-              newsletterName: '𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡',
+              newsletterName: 'ShadowCrew',
               serverMessageId: 200
             }
           }
@@ -116,8 +110,7 @@ module.exports = {
         return;
       }
 
-      // Show all options with contextInfo
-      let msg = `🎨 *Fancy styles for:* ${textToConvert}\n_Show a style by typing_ \`.fancy <number>\`\n\n`;
+      let msg = `🎨 *Styles fancy pour :* ${textToConvert}\n_Affichez un style en tapant_ \`.fancy <numéro>\`\n\n`;
       data.results.forEach((f, i) => {
         msg += `*${i + 1}*. ${f.result} (${f.name})\n`;
       });
@@ -130,25 +123,24 @@ module.exports = {
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: '120363418906972955@newsletter',
-            newsletterName: '𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡',
+            newsletterName: 'ShadowCrew',
             serverMessageId: 200
           }
         }
       }, { quoted: mek });
 
     } catch (err) {
-      console.error("Error in fancy.js:", err);
+      console.error("Erreur dans fancy.js :", err);
 
-      // Error message with contextInfo (safe fallback)
       await conn.sendMessage(from || m.chat || mek.key?.remoteJid, {
-        text: "⚠️ Error converting text. Try again later.",
+        text: "⚠️ Erreur lors de la conversion du texte. Veuillez réessayer plus tard.",
         contextInfo: {
           mentionedJid: [],
           forwardingScore: 999,
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: '120363418906972955@newsletter',
-            newsletterName: '𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡',
+            newsletterName: 'ShadowCrew',
             serverMessageId: 200
           }
         }
