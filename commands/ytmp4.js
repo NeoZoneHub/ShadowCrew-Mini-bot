@@ -2,13 +2,12 @@ const axios = require("axios");
 
 module.exports = {
   pattern: "ytmp4",
-  desc: "Download YouTube video in MP4 format using David Cyril API",
+  desc: "Télécharger une vidéo YouTube au format MP4 en utilisant l'API David Cyril",
   react: "🎬",
   category: "downloader",
   filename: __filename,
 
   execute: async (conn, mek, m, { from, q, reply }) => {
-    // Helper function to send messages with contextInfo
     const sendMessageWithContext = async (text, quoted = mek) => {
       return await conn.sendMessage(from, {
         text: text,
@@ -17,7 +16,7 @@ module.exports = {
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: "120363418906972955@newsletter",
-            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+            newsletterName: "ShadowCrew",
             serverMessageId: 200
           }
         }
@@ -25,32 +24,29 @@ module.exports = {
     };
 
     try {
-      if (!q) return await sendMessageWithContext("❌ Please provide a YouTube video link.");
+      if (!q) return await sendMessageWithContext("❌ Veuillez fournir un lien de vidéo YouTube.");
 
-      // React 🎬
       if (module.exports.react) {
         await conn.sendMessage(from, { react: { text: module.exports.react, key: mek.key } });
       }
 
-      await sendMessageWithContext("⏳ Downloading YouTube video, please wait...");
+      await sendMessageWithContext("⏳ Téléchargement de la vidéo YouTube, veuillez patienter...");
 
-      // API call
       const apiUrl = `https://apis.davidcyriltech.my.id/download/ytmp4?url=${encodeURIComponent(q)}&apikey=`;
       const { data } = await axios.get(apiUrl);
 
       if (!data || !data.result || !data.result.download_url) {
-        return await sendMessageWithContext("❌ Failed to fetch YouTube video from the API.");
+        return await sendMessageWithContext("❌ Échec de la récupération de la vidéo YouTube depuis l'API.");
       }
 
       const { download_url, title, thumbnail, quality, duration } = data.result;
 
-      const caption = `🎬 *YouTube Video*\n\n` +
-                      `📖 *Title:* ${title || "Unknown"}\n` +
-                      `🎚️ *Quality:* ${quality || "Unknown"}\n` +
-                      `⏱️ *Duration:* ${duration ? duration + "s" : "Unknown"}\n\n` +
-                      `> _ᴘᴏᴡᴇʀᴇᴅ ʙʏ ϙᴀᴅᴇᴇʀ-xᴅ - ᴍɪɴɪ_`;
+      const caption = `🎬 *Vidéo YouTube*\n\n` +
+                      `📖 *Titre :* ${title || "Inconnu"}\n` +
+                      `🎚️ *Qualité :* ${quality || "Inconnue"}\n` +
+                      `⏱️ *Durée :* ${duration ? duration + "s" : "Inconnue"}\n\n` +
+                      `> _Propulsé par ShadowCrew_`;
 
-      // Prepare thumbnail buffer if exists
       let thumbBuffer;
       if (thumbnail) {
         try {
@@ -59,7 +55,6 @@ module.exports = {
         } catch {}
       }
 
-      // Send the video with contextInfo
       await conn.sendMessage(from, {
         video: { url: download_url },
         caption: caption,
@@ -69,15 +64,15 @@ module.exports = {
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: "120363418906972955@newsletter",
-            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+            newsletterName: "ShadowCrew",
             serverMessageId: 200
           }
         }
       }, { quoted: mek });
 
     } catch (error) {
-      console.error("❌ YouTube Downloader Error:", error);
-      await sendMessageWithContext(`⚠️ Error downloading YouTube video: ${error.message}`);
+      console.error("❌ Erreur du téléchargeur YouTube :", error);
+      await sendMessageWithContext(`⚠️ Erreur lors du téléchargement de la vidéo YouTube : ${error.message}`);
     }
   }
 };
