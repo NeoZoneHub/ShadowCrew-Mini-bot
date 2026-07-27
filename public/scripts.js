@@ -1,60 +1,13 @@
 document.addEventListener("DOMContentLoaded", () => {
   const socket = io();
 
-  // Elements
   const phoneInput = document.getElementById("phone");
   const requestPairingBtn = document.getElementById("requestPairing");
   const statusEl = document.getElementById("status");
-  const channelModal = document.getElementById("channelModal");
-  const modalClose = document.getElementById("modalClose");
-  const confirmFollowBtn = document.getElementById("confirmFollow");
   const navToggle = document.getElementById("navToggle");
   const navLinks = document.getElementById('navLinks');
   const nav = document.getElementById('nav');
 
-  // Track if user has confirmed following channels
-  let channelsFollowed = localStorage.getItem('channelsFollowed') === 'true';
-
-  // Show channel modal on page load if not already followed
-  if (!channelsFollowed) {
-    setTimeout(() => {
-      channelModal.classList.add('active');
-    }, 1000);
-  }
-
-  // Close modal functions
-  function closeModal() {
-    channelModal.classList.remove('active');
-    setTimeout(() => {
-      channelModal.style.display = 'none';
-    }, 400);
-  }
-
-  modalClose.addEventListener('click', closeModal);
-
-  // Close modal when clicking outside
-  channelModal.addEventListener('click', (e) => {
-    if (e.target === channelModal) {
-      closeModal();
-    }
-  });
-
-  // Confirm following channels
-  confirmFollowBtn.addEventListener('click', () => {
-    channelsFollowed = true;
-    localStorage.setItem('channelsFollowed', 'true');
-    closeModal();
-    
-    // Show confirmation message
-    showStatus(`
-      <div style="text-align: center; color: var(--success);">
-        <i class="fas fa-check-circle" style="font-size: 2rem; margin-bottom: 10px;"></i>
-        <p>Thank you for following our channels! You can now proceed to connect your WhatsApp.</p>
-      </div>
-    `, "success");
-  });
-
-  // Mobile navigation toggle - FIXED
   if (navToggle && navLinks) {
     navToggle.addEventListener('click', () => {
       navLinks.classList.toggle('active');
@@ -62,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
         '<i class="fas fa-times"></i>' : '<i class="fas fa-bars"></i>';
     });
 
-    // Close mobile menu when clicking on links
     document.querySelectorAll('.nav-links a').forEach(link => {
       link.addEventListener('click', () => {
         navLinks.classList.remove('active');
@@ -71,13 +23,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ✅ Listen for stats updates from server
   socket.on("statsUpdate", ({ activeSockets, totalUsers }) => {
     document.getElementById("activeSockets").textContent = activeSockets;
     document.getElementById("totalUsers").textContent = totalUsers;
   });
 
-  // Navbar scroll effect
   if (nav) {
     window.addEventListener('scroll', () => {
       if (window.scrollY > 50) {
@@ -88,35 +38,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Request pairing code
   requestPairingBtn.addEventListener("click", async () => {
-    // Check if user has followed channels
-    if (!channelsFollowed) {
-      showStatus(`
-        <div style="text-align: center; color: var(--warning);">
-          <i class="fas fa-exclamation-triangle" style="font-size: 2rem; margin-bottom: 10px;"></i>
-          <p>Please follow all our channels first to use The TechX.</p>
-          <button class="btn" style="margin-top: 10px;" onclick="document.getElementById('channelModal').classList.add('active')">
-            <i class="fas fa-bell"></i> Show Channels
-          </button>
-        </div>
-      `, "warning");
-      return;
-    }
-
     const number = phoneInput.value.trim();
     if (!number) {
-      showStatus("❌ Please enter your phone number (with country code).", "error");
+      showStatus("❌ Veuillez entrer votre numéro de téléphone (avec indicatif pays).", "error");
       return;
     }
 
-    // Validate phone number format
     if (!/^[0-9]{8,15}$/.test(number.replace(/\D/g, ''))) {
-      showStatus("❌ Please enter a valid phone number (digits only, 8-15 characters).", "error");
+      showStatus("❌ Veuillez entrer un numéro de téléphone valide (chiffres uniquement, 8-15 caractères).", "error");
       return;
     }
 
-    showStatus("<span class='spinner'></span> Requesting pairing code...", "loading");
+    showStatus("<span class='spinner'></span> Demande du code d'appairage en cours...", "loading");
     requestPairingBtn.disabled = true;
 
     try {
@@ -129,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = await res.json();
       
       if (!res.ok) {
-        showStatus("❌ Error: " + (data.error || "Failed to request pairing"), "error");
+        showStatus("❌ Erreur: " + (data.error || "Échec de la demande d'appairage"), "error");
         requestPairingBtn.disabled = false;
         return;
       }
@@ -139,20 +73,19 @@ document.addEventListener("DOMContentLoaded", () => {
       
       showStatus(`
         <div style="text-align: center;">
-          <p style="margin-bottom: 20px; font-size: 1.1rem;">✅ Pairing code for <strong>${number}</strong>:</p>
+          <p style="margin-bottom: 20px; font-size: 1.1rem;">✅ Code d'appairage pour <strong>${number}</strong> :</p>
           <div class="pairing-code" id="pairingCode">${spacedCode}</div>
-          <p style="margin-top: 16px; opacity: 0.8;"><small>Click the code to copy — then enter it in WhatsApp to complete pairing.</small></p>
+          <p style="margin-top: 16px; opacity: 0.8;"><small>Cliquez sur le code pour le copier — puis entrez-le dans WhatsApp pour finaliser l'appairage.</small></p>
         </div>
       `, "success");
 
-      // Add copy functionality
       const pairingEl = document.getElementById("pairingCode");
       if (pairingEl) {
         pairingEl.addEventListener("click", () => {
           navigator.clipboard.writeText(code)
             .then(() => {
               const originalText = pairingEl.textContent;
-              pairingEl.textContent = "Copied!";
+              pairingEl.textContent = "Copié !";
               pairingEl.style.letterSpacing = "2px";
               pairingEl.style.background = "rgba(0, 255, 157, 0.2)";
               
@@ -163,19 +96,18 @@ document.addEventListener("DOMContentLoaded", () => {
               }, 2000);
             })
             .catch(() => {
-              showStatus("❌ Failed to copy to clipboard. Please manually copy the code.", "error");
+              showStatus("❌ Échec de la copie dans le presse-papiers. Veuillez copier manuellement le code.", "error");
             });
         });
       }
     } catch (err) {
-      console.error("Pairing request failed", err);
-      showStatus("❌ Failed to request pairing code (network or server error).", "error");
+      console.error("Échec de la demande d'appairage", err);
+      showStatus("❌ Échec de la demande du code d'appairage (erreur réseau ou serveur).", "error");
     } finally {
       requestPairingBtn.disabled = false;
     }
   });
 
-  // Show status message with animation
   function showStatus(message, type = "") {
     statusEl.innerHTML = message;
     statusEl.className = "";
@@ -183,50 +115,44 @@ document.addEventListener("DOMContentLoaded", () => {
     statusEl.classList.add("fade-in");
   }
 
-  // Socket: Linked event
   socket.on("linked", ({ sessionId }) => {
     showStatus(`
       <div style="text-align: center; color: var(--success);">
         <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 20px;"></i>
-        <h3 style="margin-bottom: 16px;">✅ Successfully Linked!</h3>
-        <p>Your device has been successfully connected. You can now use TechX MD features.</p>
-        <p style="margin-top: 12px; opacity: 0.8;"><small>Session ID: ${sessionId}</small></p>
+        <h3 style="margin-bottom: 16px;">✅ Connecté avec succès !</h3>
+        <p>Votre appareil a été connecté avec succès. Vous pouvez maintenant utiliser les fonctionnalités de ShadowCrew Mini.</p>
+        <p style="margin-top: 12px; opacity: 0.8;"><small>ID de session : ${sessionId}</small></p>
       </div>
     `, "success");
     
-    // Reset the form after successful pairing
     phoneInput.value = "";
   });
 
-  // Socket: pairing timeout
   socket.on("pairingTimeout", ({ number }) => {
     showStatus(`
       <div style="text-align: center; color: var(--warning);">
         <i class="fas fa-clock" style="font-size: 2.5rem; margin-bottom: 16px;"></i>
-        <h3 style="margin-bottom: 12px;">⏰ Pairing Code Expired</h3>
-        <p>Pairing code for ${number} has expired.</p>
-        <p>Please request a new code if you still need to connect.</p>
+        <h3 style="margin-bottom: 12px;">⏰ Code d'appairage expiré</h3>
+        <p>Le code d'appairage pour ${number} a expiré.</p>
+        <p>Veuillez demander un nouveau code si vous devez encore vous connecter.</p>
       </div>
     `, "warning");
   });
 
-  // Handle Enter key in phone input
   phoneInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
       requestPairingBtn.click();
     }
   });
 
-  // Input validation for phone number
   phoneInput.addEventListener("input", function(e) {
     this.value = this.value.replace(/\D/g, '');
   });
 
-  // Add loading state to button
   requestPairingBtn.addEventListener("click", function() {
     this.classList.add("loading");
     const originalText = this.innerHTML;
-    this.innerHTML = '<span class="spinner"></span> Requesting...';
+    this.innerHTML = '<span class="spinner"></span> Demande en cours...';
     
     setTimeout(() => {
       this.classList.remove("loading");
@@ -234,10 +160,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 3000);
   });
 
-  // Set current year in footer
   document.getElementById('year').textContent = new Date().getFullYear();
 
-  // Create particle effect
   function createParticles() {
     const particlesContainer = document.getElementById('particles');
     const particleCount = window.innerWidth < 768 ? 20 : 40;
@@ -246,7 +170,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const particle = document.createElement('div');
       particle.classList.add('particle');
       
-      // Random properties
       const size = Math.random() * 3 + 1;
       const posX = Math.random() * 100;
       const delay = Math.random() * 20;
@@ -264,7 +187,6 @@ document.addEventListener("DOMContentLoaded", () => {
   
   createParticles();
 
-  // Smooth scrolling for anchor links
   document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
       e.preventDefault();
@@ -278,7 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Add intersection observer for animations
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px'
@@ -293,7 +214,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }, observerOptions);
 
-  // Observe cards for scroll animations
   document.querySelectorAll('.card').forEach(card => {
     card.style.opacity = '0';
     card.style.transform = 'translateY(30px)';
