@@ -2,14 +2,13 @@ const axios = require("axios");
 
 module.exports = {
   pattern: "tiktok",
-  desc: "Download TikTok video without watermark",
+  desc: "Télécharger une vidéo TikTok sans filigrane",
   react: "🧑‍💻",
   category: "downloader",
   filename: __filename,
-  use: ".tiktok <link>",
+  use: ".tiktok <lien>",
 
   execute: async (conn, mek, m, { from, reply, q }) => {
-    // Helper function to send messages with contextInfo
     const sendMessageWithContext = async (text, quoted = mek) => {
       return await conn.sendMessage(from, {
         text: text,
@@ -18,7 +17,7 @@ module.exports = {
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: "120363418906972955@newsletter",
-            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+            newsletterName: "ShadowCrew",
             serverMessageId: 200
           }
         }
@@ -26,34 +25,31 @@ module.exports = {
     };
 
     try {
-      if (!q) return await sendMessageWithContext("⚠️ Please provide a TikTok link.");
-      if (!q.includes("tiktok.com")) return await sendMessageWithContext("❌ Invalid TikTok link.");
+      if (!q) return await sendMessageWithContext("⚠️ Veuillez fournir un lien TikTok.");
+      if (!q.includes("tiktok.com")) return await sendMessageWithContext("❌ Lien TikTok invalide.");
 
-      // React first
       if (module.exports.react) {
         await conn.sendMessage(from, { react: { text: module.exports.react, key: mek.key } });
       }
 
-      // Inform user
-      await sendMessageWithContext("⏳ Downloading TikTok video, please wait...");
+      await sendMessageWithContext("⏳ Téléchargement de la vidéo TikTok, veuillez patienter...");
 
-      // Fetch video from API
       const apiUrl = `https://delirius-apiofc.vercel.app/download/tiktok?url=${encodeURIComponent(q)}`;
       const { data } = await axios.get(apiUrl);
 
-      if (!data.status || !data.data) return await sendMessageWithContext("❌ Failed to fetch TikTok video.");
+      if (!data.status || !data.data) return await sendMessageWithContext("❌ Échec de la récupération de la vidéo TikTok.");
 
       const { title, like, comment, share, author, meta } = data.data;
       const videoUrl = meta.media.find(v => v.type === "video")?.org;
 
-      if (!videoUrl) return await sendMessageWithContext("❌ No video found in the TikTok.");
+      if (!videoUrl) return await sendMessageWithContext("❌ Aucune vidéo trouvée dans le TikTok.");
 
       const caption =
-        `🎵 *TikTok Video* 🎵\n\n` +
-        `👤 *User:* ${author.nickname} (@${author.username})\n` +
-        `📖 *Title:* ${title}\n` +
-        `👍 *Likes:* ${like}\n💬 *Comments:* ${comment}\n🔁 *Shares:* ${share}\n\n` +
-        `> _ᴘᴏᴡᴇʀᴇᴅ ʙʏ ϙᴀᴅᴇᴇʀ-xᴅ - ᴍɪɴɪ_ `;
+        `🎵 *Vidéo TikTok* 🎵\n\n` +
+        `👤 *Utilisateur :* ${author.nickname} (@${author.username})\n` +
+        `📖 *Titre :* ${title}\n` +
+        `👍 *J'aime :* ${like}\n💬 *Commentaires :* ${comment}\n🔁 *Partages :* ${share}\n\n` +
+        `> _Propulsé par ShadowCrew_ `;
 
       await conn.sendMessage(from, {
         video: { url: videoUrl },
@@ -63,15 +59,15 @@ module.exports = {
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: "120363418906972955@newsletter",
-            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+            newsletterName: "ShadowCrew",
             serverMessageId: 200
           }
         }
       }, { quoted: mek });
 
     } catch (error) {
-      console.error("❌ TikTok Downloader Error:", error);
-      await sendMessageWithContext(`⚠️ Error downloading TikTok video:\n${error.message}`);
+      console.error("❌ Erreur du téléchargeur TikTok :", error);
+      await sendMessageWithContext(`⚠️ Erreur lors du téléchargement de la vidéo TikTok :\n${error.message}`);
     }
   }
 };
