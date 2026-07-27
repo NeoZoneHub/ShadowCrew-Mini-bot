@@ -1,26 +1,22 @@
-// === commands/gali.js ===
 module.exports = {
     pattern: "gali",
-    desc: "Send random insults to someone",
+    desc: "Envoyer des insultes aléatoires à quelqu'un",
     category: "fun",
     filename: __filename,
-    use: ".gali @user or .gali name",
+    use: ".gali @utilisateur ou .gali nom",
 
     execute: async (conn, message, m, { from, reply, args, q, isGroup, sender, prefix, command }) => {
         try {
-            // Target user (mention / reply / text)
             let target = m.mentionedJid?.[0] || m.quoted?.sender || null;
             let name = q ? q.trim().toLowerCase() : '';
 
             if (!target && !name) {
-                return reply(`Example:\n${prefix + command} name\n${prefix + command} @user`);
+                return reply(`Exemple :\n${prefix + command} nom\n${prefix + command} @utilisateur`);
             }
 
-            // Blocked names
             let blocked = ['silver', 'talha', 'ashir', 'zaman', 'haji zaman'];
 
             if (blocked.includes(name)) {
-                // Random blocked reply
                 let blockedReplies = [
                     `${name.toUpperCase()} *_Tari maa ka sath soya tha? Laudy_*`,
                     `${name.toUpperCase()} *_Tari amma ka yaar ha...?_*`
@@ -33,7 +29,6 @@ module.exports = {
                 }, { quoted: message });
             }
 
-            // Random gali list (UPDATED with new lines)
             let galis = [
                 `${q || '@' + target?.split('@')[0]} - *_teri mkc bc laudy gando bsdk bkl 💀 (3 baar)_*`,
                 `${q || '@' + target?.split('@')[0]} - *_salay tata madarchod randwe gando mkc Tari 🤡 (2 baar)_*`,
@@ -47,7 +42,6 @@ module.exports = {
 
             let random = galis[Math.floor(Math.random() * galis.length)];
 
-            // Mention system for normal gali
             if (target) {
                 return conn.sendMessage(from, {
                     text: random,
@@ -58,8 +52,8 @@ module.exports = {
             }
 
         } catch (err) {
-            console.error("Gali command error:", err);
-            reply("❌ Failed to send insult.");
+            console.error("Erreur de la commande gali :", err);
+            reply("❌ Échec de l'envoi de l'insulte.");
         }
     }
 };
