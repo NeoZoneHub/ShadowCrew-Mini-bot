@@ -2,13 +2,12 @@ const axios = require("axios");
 
 module.exports = {
     pattern: "pinterest",
-    desc: "Download media from Pinterest",
+    desc: "Télécharger des médias depuis Pinterest",
     react: "📌",
     category: "download",
     filename: __filename,
 
     execute: async (conn, mek, m, { from, args, q, reply }) => {
-        // Helper function to send messages with contextInfo
         const sendMessageWithContext = async (text, quoted = mek) => {
             return await conn.sendMessage(from, {
                 text: text,
@@ -17,7 +16,7 @@ module.exports = {
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: "120363418906972955@newsletter",
-                        newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+                        newsletterName: "ShadowCrew Mini",
                         serverMessageId: 200
                     }
                 }
@@ -28,91 +27,81 @@ module.exports = {
             const query = q || args.join(" ");
             if (!query) {
                 return await sendMessageWithContext(
-                    '❎ Please provide the Pinterest URL to download from.\n\nExample: .pinterest https://pin.it/1cR6JJNpv'
+                    '❎ Veuillez fournir l\'URL Pinterest à télécharger.\n\nExemple : .pinterest https://pin.it/1cR6JJNpv'
                 );
             }
 
-            // Validate Pinterest URL
             if (!query.includes('pinterest.com') && !query.includes('pin.it')) {
-                return await sendMessageWithContext('❎ Please provide a valid Pinterest URL (pinterest.com or pin.it)');
+                return await sendMessageWithContext('❎ Veuillez fournir une URL Pinterest valide (pinterest.com ou pin.it)');
             }
 
-            // React with pin emoji
             if (module.exports.react) {
                 await conn.sendMessage(from, { react: { text: module.exports.react, key: mek.key } });
             }
 
-            await sendMessageWithContext("📌 Downloading from Pinterest... Please wait.");
+            await sendMessageWithContext("📌 Téléchargement depuis Pinterest... Veuillez patienter.");
 
             let response;
             let apiUsed = "GiftedTech";
 
-            // Try GiftedTech API first
             try {
                 const api = `https://api.giftedtech.web.id/api/download/pinterestdl?apikey=gifted&url=${encodeURIComponent(query)}`;
                 response = await axios.get(api, { timeout: 30000 });
-                
+
                 if (!response.data.success) {
-                    throw new Error('GiftedTech API failed');
+                    throw new Error('Échec de l\'API GiftedTech');
                 }
             } catch (error) {
-                // Fallback to PrinceTech API
                 try {
                     apiUsed = "PrinceTech";
                     const api = `https://api.princetechn.com/api/download/pinterestdl?apikey=prince&url=${encodeURIComponent(query)}`;
                     response = await axios.get(api, { timeout: 30000 });
-                    
+
                     if (!response.data || !response.data.result) {
-                        throw new Error('PrinceTech API failed');
+                        throw new Error('Échec de l\'API PrinceTech');
                     }
                 } catch (fallbackError) {
-                    return await sendMessageWithContext('❎ Failed to fetch data from both Pinterest APIs. Please try again later.');
+                    return await sendMessageWithContext('❎ Échec de la récupération des données depuis les deux APIs Pinterest. Veuillez réessayer plus tard.');
                 }
             }
 
             let media, title, description;
 
-            // Handle different API response structures
             if (apiUsed === "GiftedTech") {
                 media = response.data.result.media;
-                title = response.data.result.title || 'No title available';
-                description = response.data.result.description || 'No description available';
+                title = response.data.result.title || 'Aucun titre disponible';
+                description = response.data.result.description || 'Aucune description disponible';
             } else {
-                // PrinceTech API structure
                 media = response.data.result;
-                title = response.data.result?.title || 'No title available';
-                description = response.data.result?.description || 'No description available';
+                title = response.data.result?.title || 'Aucun titre disponible';
+                description = response.data.result?.description || 'Aucune description disponible';
             }
 
-            // Get the best quality media
             let mediaUrl;
             if (Array.isArray(media)) {
-                // GiftedTech structure - array of media objects
                 mediaUrl = media.find(item => item.type && item.type.includes('720p'))?.download_url || 
                           media.find(item => item.type && item.type.includes('video'))?.download_url || 
                           media[0]?.download_url;
             } else if (media?.download_url) {
-                // PrinceTech structure - single media object
                 mediaUrl = media.download_url;
             }
 
             if (!mediaUrl) {
-                return await sendMessageWithContext('❎ No downloadable media found in the response.');
+                return await sendMessageWithContext('❎ Aucun média téléchargeable trouvé dans la réponse.');
             }
 
-            const caption = `╭━━━〔 *PINTEREST DOWNLOAD* 〕━━━┈⊷
+            const caption = `╭━━━〔 *TÉLÉCHARGEMENT PINTEREST* 〕━━━┈⊷
 ┃▸╭───────────
-┃▸┃๏ *PINS DOWNLOADER*
+┃▸┃๏ *TÉLÉCHARGEUR PINS*
 ┃▸└───────────···๏
 ╰────────────────┈⊷
 ╭━━♜━⪼
-┇๏ *Title* - ${title}
+┇๏ *Titre* - ${title}
 ┇๏ *Source* - ${apiUsed}
 ┇๏ *Description* - ${description.substring(0, 100)}${description.length > 100 ? '...' : ''}
 ╰━━♜━⪼
-> *© ᴘᴏᴡᴇʀᴇᴅ ʙʏ ϙᴀᴅᴇᴇʀ-xᴅ - ᴍɪɴɪ ♡*`;
+> *© Propulsé par ShadowCrew Mini ♡*`;
 
-            // Determine if it's video or image and send accordingly
             const isVideo = mediaUrl.includes('.mp4') || 
                            mediaUrl.includes('video') ||
                            (Array.isArray(media) && media.some(item => item.type && item.type.includes('video'))) ||
@@ -127,7 +116,7 @@ module.exports = {
                         isForwarded: true,
                         forwardedNewsletterMessageInfo: {
                             newsletterJid: "120363418906972955@newsletter",
-                            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+                            newsletterName: "ShadowCrew Mini",
                             serverMessageId: 200
                         }
                     }
@@ -141,7 +130,7 @@ module.exports = {
                         isForwarded: true,
                         forwardedNewsletterMessageInfo: {
                             newsletterJid: "120363418906972955@newsletter",
-                            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+                            newsletterName: "ShadowCrew Mini",
                             serverMessageId: 200
                         }
                     }
@@ -149,8 +138,8 @@ module.exports = {
             }
 
         } catch (e) {
-            console.error("❌ Pinterest Download Error:", e.message);
-            await sendMessageWithContext(`⚠️ Error: ${e.message}`);
+            console.error("❌ Erreur de téléchargement Pinterest :", e.message);
+            await sendMessageWithContext(`⚠️ Erreur : ${e.message}`);
         }
     }
 };
