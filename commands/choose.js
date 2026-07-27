@@ -1,17 +1,15 @@
-// commands/choose.js
 module.exports = {
     pattern: "choose",
-    desc: "Randomly chooses one mentioned user.",
+    desc: "Choisit aléatoirement un utilisateur parmi ceux mentionnés.",
     react: "🎲",
     category: "fun",
     filename: __filename,
     execute: async (conn, mek, m, { from, isGroup, reply }) => {
         try {
             if (!isGroup) {
-                return reply("❌ This command can only be used in groups.");
+                return reply("❌ Cette commande ne peut être utilisée que dans les groupes.");
             }
 
-            // React to the command
             if (module.exports.react) {
                 await conn.sendMessage(from, {
                     react: { text: module.exports.react, key: mek.key }
@@ -21,11 +19,11 @@ module.exports = {
             const mentioned = mek.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
 
             if (mentioned.length < 2) {
-                return reply("❌ Tag at least 2 users to choose from!\n\nExample:\n.choose @user1 @user2");
+                return reply("❌ Mentionnez au moins 2 utilisateurs à choisir !\n\nExemple :\n.choose @utilisateur1 @utilisateur2");
             }
 
             const randomPick = mentioned[Math.floor(Math.random() * mentioned.length)];
-            const message = `🎲 I  choose... @${randomPick.split("@")[0]} 🎉`;
+            const message = `🎲 Je choisis... @${randomPick.split("@")[0]} 🎉`;
 
             await conn.sendMessage(from, {
                 text: message,
@@ -33,8 +31,8 @@ module.exports = {
             }, { quoted: mek });
 
         } catch (error) {
-            console.error("❌ Error in choose command:", error);
-            reply("⚠️ An error occurred while processing the command. Please try again.");
+            console.error("❌ Erreur dans la commande choose :", error);
+            reply("⚠️ Une erreur est survenue lors du traitement de la commande. Veuillez réessayer.");
         }
     }
 };
