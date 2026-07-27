@@ -7,13 +7,12 @@ try {
 
 module.exports = {
   pattern: "dare",
-  desc: "Give a dare to a user",
+  desc: "Donner un défi à un utilisateur",
   category: "fun",
   react: "🎲",
   filename: __filename,
 
   execute: async (conn, mek, m, { from, isGroup, reply }) => {
-    // Helper function to send messages with contextInfo
     const sendMessageWithContext = async (text, quoted = mek, mentions = []) => {
       return await conn.sendMessage(from, {
         text: text,
@@ -23,7 +22,7 @@ module.exports = {
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: "120363378786516098@newsletter",
-            newsletterName: "BrenaldMedia",
+            newsletterName: "ShadowCrew",
             serverMessageId: 200
           }
         }
@@ -32,7 +31,7 @@ module.exports = {
 
     try {
       if (!isGroup) {
-        return await sendMessageWithContext("❌ This command can only be used in groups.");
+        return await sendMessageWithContext("❌ Cette commande ne peut être utilisée que dans les groupes.");
       }
 
       const rawTarget =
@@ -40,33 +39,30 @@ module.exports = {
         mek.message?.extendedTextMessage?.contextInfo?.participant;
 
       if (!rawTarget) {
-        return await sendMessageWithContext("Please mention or reply to a user.\nUsage: `.dare @user`");
+        return await sendMessageWithContext("Veuillez mentionner ou répondre à un utilisateur.\nUtilisation : `.dare @utilisateur`");
       }
 
-      // React first
       if (module.exports.react) {
         await conn.sendMessage(from, {
           react: { text: module.exports.react, key: mek.key },
         });
       }
 
-      // ✅ New API
       const apiUrl = "https://apis.davidcyriltech.my.id/dare?apikey";
       const res = await fetchFn(apiUrl);
-      if (!res.ok) return await sendMessageWithContext("⚠️ Failed to fetch dare from API.");
+      if (!res.ok) return await sendMessageWithContext("⚠️ Échec de la récupération du défi depuis l'API.");
       const data = await res.json();
 
       const dareText = data?.question || null;
-      if (!dareText) return await sendMessageWithContext("⚠️ No dare found.");
+      if (!dareText) return await sendMessageWithContext("⚠️ Aucun défi trouvé.");
 
-      const message = `🎲 @${rawTarget.split("@")[0]}, your dare is:\n\n${dareText}`;
+      const message = `🎲 @${rawTarget.split("@")[0]}, ton défi est :\n\n${dareText}`;
 
-      // Send the dare message with contextInfo
       await sendMessageWithContext(message, mek, [rawTarget]);
 
     } catch (err) {
-      console.error("Error in dare.js:", err);
-      await sendMessageWithContext("⚠️ Error fetching dare. Try again later.");
+      console.error("Erreur dans dare.js :", err);
+      await sendMessageWithContext("⚠️ Erreur lors de la récupération du défi. Veuillez réessayer plus tard.");
     }
   },
 };
