@@ -2,14 +2,13 @@ const axios = require('axios');
 
 module.exports = {
     pattern: "tempmail",
-    desc: "Generate a new temporary email address",
+    desc: "Générer une nouvelle adresse email temporaire",
     category: "utility",
     react: "📧",
     filename: __filename,
     use: ".tempmail",
 
     execute: async (conn, message, m, { from, reply }) => {
-        // Helper function to send messages with contextInfo
         const sendMessageWithContext = async (text, quoted = message) => {
             return await conn.sendMessage(from, {
                 text: text,
@@ -18,7 +17,7 @@ module.exports = {
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: "120363418906972955@newsletter",
-                        newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+                        newsletterName: "ShadowCrew",
                         serverMessageId: 200
                     }
                 }
@@ -26,7 +25,6 @@ module.exports = {
         };
 
         try {
-            // React 📧
             if (module.exports.react) {
                 await conn.sendMessage(from, { react: { text: module.exports.react, key: message.key } });
             }
@@ -34,44 +32,41 @@ module.exports = {
             const response = await axios.get('https://apis.davidcyriltech.my.id/temp-mail');
             const { email, session_id, expires_at } = response.data;
 
-            // Format the expiration time and date
             const expiresDate = new Date(expires_at);
-            const timeString = expiresDate.toLocaleTimeString('en-US', {
+            const timeString = expiresDate.toLocaleTimeString('fr-FR', {
                 hour: '2-digit',
-                minute: '2-digit',
-                hour12: true
+                minute: '2-digit'
             });
-            const dateString = expiresDate.toLocaleDateString('en-US', {
+            const dateString = expiresDate.toLocaleDateString('fr-FR', {
                 weekday: 'short',
                 month: 'short',
                 day: 'numeric',
                 year: 'numeric'
             });
 
-            // Create the complete message
             const messageText = `
-📧 *TEMPORARY EMAIL GENERATED*
+📧 *EMAIL TEMPORAIRE GÉNÉRÉ*
 
-✉️ *Email Address:*
+✉️ *Adresse email :*
 ${email}
 
-⏳ *Expires:*
+⏳ *Expire :*
 ${timeString} • ${dateString}
 
-🔑 *Session ID:*
+🔑 *ID de session :*
 \`\`\`${session_id}\`\`\`
 
-📥 *Check Inbox:*
+📥 *Vérifier la boîte de réception :*
 .inbox ${session_id}
 
-_Email will expire after 24 hours_
+_L'email expirera après 24 heures_
 `;
 
             await sendMessageWithContext(messageText);
 
         } catch (e) {
-            console.error('TempMail error:', e);
-            await sendMessageWithContext(`❌ Error: ${e.message}`);
+            console.error('Erreur TempMail :', e);
+            await sendMessageWithContext(`❌ Erreur : ${e.message}`);
         }
     }
 };
