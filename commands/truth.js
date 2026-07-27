@@ -7,13 +7,12 @@ try {
 
 module.exports = {
   pattern: "truth",
-  desc: "Give a truth question to a user",
+  desc: "Poser une question vérité à un utilisateur",
   category: "fun",
   react: "🤔",
   filename: __filename,
 
   execute: async (conn, mek, m, { from, isGroup, reply }) => {
-    // Helper function to send messages with contextInfo
     const sendMessageWithContext = async (text, quoted = mek, mentions = []) => {
       return await conn.sendMessage(from, {
         text: text,
@@ -23,7 +22,7 @@ module.exports = {
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
             newsletterJid: "120363418906972955@newsletter",
-            newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+            newsletterName: "ShadowCrew",
             serverMessageId: 200
           }
         }
@@ -32,7 +31,7 @@ module.exports = {
 
     try {
       if (!isGroup) {
-        return await sendMessageWithContext("❌ This command can only be used in groups.");
+        return await sendMessageWithContext("❌ Cette commande ne peut être utilisée que dans les groupes.");
       }
 
       const rawTarget =
@@ -40,33 +39,30 @@ module.exports = {
         mek.message?.extendedTextMessage?.contextInfo?.participant;
 
       if (!rawTarget) {
-        return await sendMessageWithContext("Please mention or reply to a user.\nUsage: `.truth @user`");
+        return await sendMessageWithContext("Veuillez mentionner ou répondre à un utilisateur.\nUtilisation : `.truth @utilisateur`");
       }
 
-      // React first
       if (module.exports.react) {
         await conn.sendMessage(from, {
           react: { text: module.exports.react, key: mek.key },
         });
       }
 
-      // ✅ New API
       const apiUrl = "https://apis.davidcyriltech.my.id/truth?apikey";
       const res = await fetchFn(apiUrl);
-      if (!res.ok) return await sendMessageWithContext("⚠️ Failed to fetch truth from API.");
+      if (!res.ok) return await sendMessageWithContext("⚠️ Échec de la récupération de la vérité depuis l'API.");
       const data = await res.json();
 
       const truthText = data?.question || null;
-      if (!truthText) return await sendMessageWithContext("⚠️ No truth found.");
+      if (!truthText) return await sendMessageWithContext("⚠️ Aucune vérité trouvée.");
 
-      const message = `🤔 @${rawTarget.split("@")[0]}, your truth question is:\n\n${truthText}`;
+      const message = `🤔 @${rawTarget.split("@")[0]}, voici ta question vérité :\n\n${truthText}`;
 
-      // Send the truth message with contextInfo
       await sendMessageWithContext(message, mek, [rawTarget]);
 
     } catch (err) {
-      console.error("Error in truth.js:", err);
-      await sendMessageWithContext("⚠️ Error fetching truth. Try again later.");
+      console.error("Erreur dans truth.js :", err);
+      await sendMessageWithContext("⚠️ Erreur lors de la récupération de la vérité. Veuillez réessayer plus tard.");
     }
   },
 };
