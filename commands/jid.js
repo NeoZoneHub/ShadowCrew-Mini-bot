@@ -2,7 +2,7 @@ module.exports = {
     pattern: "cid",
     alias: ["newsletter", "id", "channelid"],
     react: "⏳",
-    desc: "Get WhatsApp Channel info from link",
+    desc: "Obtenir les informations d'une chaîne WhatsApp à partir d'un lien",
     category: "whatsapp",
     filename: __filename,
     use: ".cid https://whatsapp.com/channel/xxxxxxxxx",
@@ -16,12 +16,12 @@ module.exports = {
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
                         newsletterJid: "120363418906972955@newsletter",
-                        newsletterName: "DIGITAL CREW 243",
+                        newsletterName: "ShadowCrew",
                         serverMessageId: 200
                     },
                     externalAdReply: {
-                        title: "📡 Channel Info",
-                        body: "DIGITAL CREW 243",
+                        title: "📡 Informations de la chaîne",
+                        body: "ShadowCrew",
                         thumbnailUrl: "https://files.catbox.moe/6dhr11.jpg",
                         sourceUrl: "https://github.com/QadeerXTech/QADEER-AI",
                         mediaType: 1,
@@ -32,10 +32,10 @@ module.exports = {
         };
 
         try {
-            if (!q) return reply("❎ Please provide a WhatsApp Channel link.\n\n*Example:* .cid https://whatsapp.com/channel/123456789");
+            if (!q) return reply("❎ Veuillez fournir un lien de chaîne WhatsApp.\n\n*Exemple :* .cid https://whatsapp.com/channel/123456789");
 
             const match = q.match(/whatsapp\.com\/channel\/([\w-]+)/);
-            if (!match) return reply("⚠️ *Invalid channel link format.*\n\nMake sure it looks like:\nhttps://whatsapp.com/channel/xxxxxxxxx");
+            if (!match) return reply("⚠️ *Format de lien de chaîne invalide.*\n\nAssurez-vous qu'il ressemble à :\nhttps://whatsapp.com/channel/xxxxxxxxx");
 
             const inviteId = match[1];
 
@@ -43,16 +43,16 @@ module.exports = {
             try {
                 metadata = await conn.newsletterMetadata("invite", inviteId);
             } catch (e) {
-                return reply("❌ Failed to fetch channel metadata. Make sure the link is correct.");
+                return reply("❌ Échec de la récupération des métadonnées de la chaîne. Vérifiez que le lien est correct.");
             }
 
-            if (!metadata || !metadata.id) return reply("❌ Channel not found or inaccessible.");
+            if (!metadata || !metadata.id) return reply("❌ Chaîne introuvable ou inaccessible.");
 
-            const infoText = `📡 Channel Info\n\n` +
-                `🛠️ *ID:* ${metadata.id}\n` +
-                `📌 *Name:* ${metadata.name}\n` +
-                `👥 *Followers:* ${metadata.subscribers?.toLocaleString() || "N/A"}\n` +
-                `📅 *Created on:* ${metadata.creation_time ? new Date(metadata.creation_time * 1000).toLocaleString("id-ID") : "Unknown"}`;
+            const infoText = `📡 Informations de la chaîne\n\n` +
+                `🛠️ *ID :* ${metadata.id}\n` +
+                `📌 *Nom :* ${metadata.name}\n` +
+                `👥 *Abonnés :* ${metadata.subscribers?.toLocaleString() || "N/A"}\n` +
+                `📅 *Créée le :* ${metadata.creation_time ? new Date(metadata.creation_time * 1000).toLocaleString("fr-FR") : "Inconnue"}`;
 
             if (metadata.preview) {
                 await conn.sendMessage(from, {
@@ -64,8 +64,8 @@ module.exports = {
             }
 
         } catch (error) {
-            console.error("❌ Error in .cid plugin:", error);
-            reply("⚠️ An unexpected error occurred.");
+            console.error("❌ Erreur dans le plugin .cid :", error);
+            reply("⚠️ Une erreur inattendue s'est produite.");
         }
     }
 };
