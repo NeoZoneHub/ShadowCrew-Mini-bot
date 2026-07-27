@@ -1,17 +1,15 @@
-// === commands/jadu.js ===
 module.exports = {
     pattern: "vv",
     alias: ["wow", "nice", "mashallah", "good", "cool"],
-    desc: "Save view once media (image/video/audio) to DM",
+    desc: "Enregistrer les médias à visualisation unique (image/vidéo/audio) en message privé",
     category: "tools",
     filename: __filename,
-    use: ".jadu or .vv (reply to view once media)",
+    use: ".jadu ou .vv (répondre à un média à visualisation unique)",
 
     execute: async (conn, message, m, { from, reply, sender, prefix, command }) => {
         try {
-            // Check if replying to a message
             if (!m.quoted) {
-                return reply(`*Reply to an image, video, or audio with the caption ${prefix + command}*`);
+                return reply(`*Répondez à une image, une vidéo ou un audio avec la légende ${prefix + command}*`);
             }
 
             let mime = (m.quoted.msg || m.quoted).mimetype || '';
@@ -21,18 +19,18 @@ module.exports = {
                     let media = await m.quoted.download();
                     await conn.sendMessage(sender, {
                         image: media,
-                        caption: "✅ View once image sent to your DM",
+                        caption: "✅ Image à visualisation unique envoyée dans vos messages privés",
                     });
-                    await reply("✅ Image saved! Check your DM.");
-                    
+                    await reply("✅ Image enregistrée ! Vérifiez vos messages privés.");
+
                 } else if (/video/.test(mime)) {
                     let media = await m.quoted.download();
                     await conn.sendMessage(sender, {
                         video: media,
-                        caption: "✅ View once video sent to your DM",
+                        caption: "✅ Vidéo à visualisation unique envoyée dans vos messages privés",
                     });
-                    await reply("✅ Video saved! Check your DM.");
-                    
+                    await reply("✅ Vidéo enregistrée ! Vérifiez vos messages privés.");
+
                 } else if (/audio/.test(mime)) {
                     let media = await m.quoted.download();
                     await conn.sendMessage(sender, {
@@ -40,19 +38,19 @@ module.exports = {
                         mimetype: 'audio/mpeg',
                         ptt: true
                     });
-                    await reply("✅ Audio saved! Check your DM.");
-                    
+                    await reply("✅ Audio enregistré ! Vérifiez vos messages privés.");
+
                 } else {
-                    reply(`❌ Unsupported media type!\nReply to an image, video, or audio with *${prefix + command}*`);
+                    reply(`❌ Type de média non pris en charge !\nRépondez à une image, une vidéo ou un audio avec *${prefix + command}*`);
                 }
             } catch (err) {
-                console.error('Error processing media:', err);
-                reply(`Failed to process media. Please try again.`);
+                console.error('Erreur de traitement du média :', err);
+                reply(`Échec du traitement du média. Veuillez réessayer.`);
             }
 
         } catch (err) {
-            console.error("Jadu command error:", err);
-            reply("❌ Failed to save media.");
+            console.error("Erreur de la commande jadu :", err);
+            reply("❌ Échec de l'enregistrement du média.");
         }
     }
 };
