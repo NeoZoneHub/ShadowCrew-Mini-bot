@@ -1,4 +1,3 @@
-// commands/url.js
 const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 const axios = require("axios");
 const FormData = require("form-data");
@@ -8,11 +7,11 @@ const path = require("path");
 
 module.exports = {
   pattern: "url",
-  desc: "Convert media to Catbox URL",
+  desc: "Convertir un média en URL Catbox",
   react: "🖇",
   category: "utility",
   filename: __filename,
-  use: ".url [reply to media or send media with caption]",
+  use: ".url [répondre à un média ou envoyer un média avec légende]",
 
   execute: async (conn, message, m, { from }) => {
     const sendMessageWithContext = async (text, quoted = message) => {
@@ -25,7 +24,7 @@ module.exports = {
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
               newsletterJid: "120363418906972955@newsletter",
-              newsletterName: "𝐐α͜͡𝐝εεɼ𝐗𝐓ε𝐜𝐡",
+              newsletterName: "ShadowCrew",
               serverMessageId: 200,
             },
           },
@@ -35,18 +34,16 @@ module.exports = {
     };
 
     try {
-      // 1) Use replied message if exists, otherwise current message
       const quotedMsg =
         message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
       const target = quotedMsg || message.message;
 
       if (!target) {
         return await sendMessageWithContext(
-          "❌ Please reply to an audio, video, image, or document with `.url`"
+          "❌ Veuillez répondre à un audio, une vidéo, une image ou un document avec `.url`"
         );
       }
 
-      // 2) Detect media type & node
       let mediaNode = null;
       let mediaType = null;
       if (target.imageMessage) {
@@ -63,11 +60,10 @@ module.exports = {
         mediaType = "document";
       } else {
         return await sendMessageWithContext(
-          "❌ Please reply to an audio, video, image, or document with `.url`"
+          "❌ Veuillez répondre à un audio, une vidéo, une image ou un document avec `.url`"
         );
       }
 
-      // 3) React
       if (module.exports.react) {
         try {
           await conn.sendMessage(from, {
@@ -76,7 +72,6 @@ module.exports = {
         } catch {}
       }
 
-      // 4) Download media
       let buffer;
       try {
         const stream = await downloadContentFromMessage(mediaNode, mediaType);
@@ -86,19 +81,18 @@ module.exports = {
         }
         buffer = _buf;
       } catch (e) {
-        console.error("Download error:", e);
+        console.error("Erreur de téléchargement :", e);
         return await sendMessageWithContext(
-          "❌ Failed to download media. Try replying to a valid file."
+          "❌ Échec du téléchargement du média. Essayez de répondre à un fichier valide."
         );
       }
 
       if (!buffer || buffer.length === 0) {
         return await sendMessageWithContext(
-          "❌ Downloaded media is empty or too large."
+          "❌ Le média téléchargé est vide ou trop volumineux."
         );
       }
 
-      // 5) Extension
       let extension = "";
       if (mediaType === "image") extension = ".jpg";
       else if (mediaType === "video") extension = ".mp4";
@@ -114,7 +108,6 @@ module.exports = {
       );
       fs.writeFileSync(tempFilePath, buffer);
 
-      // 6) Upload to Catbox
       const form = new FormData();
       form.append("fileToUpload", fs.createReadStream(tempFilePath));
       form.append("reqtype", "fileupload");
@@ -129,25 +122,23 @@ module.exports = {
       );
 
       if (!uploadResponse.data)
-        throw new Error("Error uploading to Catbox");
+        throw new Error("Erreur lors de l'upload vers Catbox");
       const uploadedUrl = uploadResponse.data;
 
-      // cleanup
       try {
         fs.unlinkSync(tempFilePath);
       } catch {}
 
-      // 7) Reply with result
       await sendMessageWithContext(
-        `*${mediaType.toUpperCase()} Uploaded Successfully*\n\n` +
-          `*Size:* ${formatBytes(buffer.length)}\n` +
-          `*URL:* ${uploadedUrl}\n\n` +
-          `> © Uploaded by *QADEER-XD - MINI* 💜`
+        `*${mediaType.toUpperCase()} Téléchargé avec succès*\n\n` +
+          `*Taille :* ${formatBytes(buffer.length)}\n` +
+          `*URL :* ${uploadedUrl}\n\n` +
+          `> © Uploadé par *ShadowCrew* 💜`
       );
     } catch (err) {
-      console.error("URL execution error:", err);
+      console.error("Erreur d'exécution url :", err);
       await sendMessageWithContext(
-        `⚠️ Error: ${err.message || "Failed to process media"}`
+        `⚠️ Erreur : ${err.message || "Échec du traitement du média"}`
       );
     }
   },
